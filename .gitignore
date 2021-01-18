@@ -1,3 +1,6 @@
 /Core/bin
 /DLHK-Core/bin
 /Repository/bin
+/Repository/obj
+/DLHK-Core/obj
+/Core/obj
