@@ -18,6 +18,7 @@ namespace DLHK_Core
 
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddCors();
 			services.AddControllers();
 			services.ConnectToContext();
 			services.ConfigureService();
@@ -30,7 +31,12 @@ namespace DLHK_Core
 				app.UseDeveloperExceptionPage();
 			}
 
-			app.UseCors();
+			app.UseCors(x => x
+				.AllowAnyMethod()
+				.AllowAnyHeader()
+				.SetIsOriginAllowed(origin => true)
+				.AllowCredentials());
+
 			app.UseRouting();
 			app.UseEndpoints(endpoints => endpoints.MapControllers());
 		}

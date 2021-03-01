@@ -1,7 +1,8 @@
 ﻿using Core.Interfaces;
+using Core.Manager.TestManager;
 using Core.Models;
 using Microsoft.AspNetCore.Mvc;
-using System;
+using Repository.Model;
 using System.Threading.Tasks;
 
 namespace DLHK_Core.Controllers
@@ -17,18 +18,36 @@ namespace DLHK_Core.Controllers
 			_testService = testService;
 		}
 
+		[HttpGet]
 		public async Task<object> Get()
 		{
-			try
-			{
-				var result = await _testService.Get();
+			return await TaskRunner.Run(_testService.Get);
+		}
 
-				return ApiResponse.Success(result);
-			}
-			catch (Exception ex)
-			{
-				return ApiResponse.Error(ex.Message);
-			}
+		[HttpPost]
+		[Route("paged")]
+		public async Task<object> GetPaged([FromBody] TestFilter filter)
+		{
+			return await TaskRunner.Run(_testService.GetPaged, filter);
+		}
+
+		[HttpPost]
+		public async Task<object> Post([FromBody] Test test)
+		{
+			return await TaskRunner.Run(_testService.Post, test, Message.Created());
+		}
+
+		[HttpPut]
+		public async Task<object> Put([FromBody] Test test)
+		{
+			return await TaskRunner.Run(_testService.Update, test, Message.Updated());
+		}
+
+		[HttpDelete]
+		[Route("{id}")]
+		public async Task<object> Delete([FromRoute] long id)
+		{
+			return await TaskRunner.Run(_testService.Delete, id, Message.Deleted());
 		}
 	}
 }

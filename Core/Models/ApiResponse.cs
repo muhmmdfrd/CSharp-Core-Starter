@@ -2,6 +2,16 @@
 {
 	public static class ApiResponse
 	{
+		public static object Success()
+		{
+			return new Response()
+			{
+				Message = "success",
+				Success = true,
+				Result = null
+			};
+		}
+
 		public static object Success(object value)
 		{
 			return new Response()
@@ -9,6 +19,16 @@
 				Message = "success",
 				Success = true,
 				Result = value
+			};
+		}
+
+		public static object Success(string message)
+		{
+			return new Response()
+			{
+				Message = message,
+				Success = true,
+				Result = null
 			};
 		}
 

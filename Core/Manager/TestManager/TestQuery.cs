@@ -1,4 +1,7 @@
-﻿using Repository.Model;
+﻿using Core.Extensions;
+using Core.Models;
+using Microsoft.EntityFrameworkCore;
+using Repository.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +15,12 @@ namespace Core.Manager.TestManager
 
 		public TestQuery(FirstStoreContext db)
 		{
-			_db = db;
+			_db =  db;
 		}
 
-		private async Task<IQueryable<Test>> GetQuery()
+		private async Task<IQueryable<TestDTO>> GetQuery()
 		{
-			return _db.Tests.Select(x => new Test()
+			return _db.Tests.AsNoTracking().Select(x => new TestDTO()
 			{
 				Id = x.Id,
 				Age = x.Age,
@@ -26,11 +29,45 @@ namespace Core.Manager.TestManager
 			});
 		}
 
-		public async Task<List<Test>> GetList()
+		public async Task<List<TestDTO>> GetList()
 		{
 			var query = await GetQuery();
+			return await query.ToListAsync();
+		}
 
-			return query.ToList();
+		public async Task<Pagination<TestDTO>> GetPaging(TestFilter filter)
+		{
+			var query = await GetQuery();
+			int total = query.Count();
+			int filtered = total;
+
+			if (filter.Id > 0)
+			{
+				query = query.Where(x => x.Id == filter.Id);
+				filtered = query.Count();
+
+				if (filtered.IsZero())
+					throw new Exception(Message.NotFound("Test"));
+			}
+
+			if (!string.IsNullOrEmpty(filter.Keyword))
+			{
+				query = query.Where(x => x.Name.Contains(filter.Keyword));
+				filtered = query.Count();
+			}
+
+			query = query
+				.OrderBy(x => x.Id)
+				.Skip(filter.Skip)
+				.Take(filter.PageSize);
+
+			return new Pagination<TestDTO>()
+			{
+				Data = query.ToList(),
+				Filtered = filtered,
+				PageSize = filter.PageSize,
+				Total = total
+			};
 		}
 
 		public void Dispose()
